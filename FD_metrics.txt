@@ -1,0 +1,82 @@
+# Install and load required packages if not already installed
+if (!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr")
+}
+if (!requireNamespace("tidyr", quietly = TRUE)) {
+  install.packages("tidyr")
+}
+
+# Load required packages
+library(dplyr)
+library(tidyr)
+
+# Function to convert species trait data to a functional entity matrix
+species_to_FE <- function(traits_data) {
+  # Function implementation...
+}
+
+# Function to compute functional diversity metrics
+FE_metrics <- function(traits_data, occurrence_matrix, check_species_pool, folder_plot, nm_asb_plot) {
+  # Function implementation...
+}
+
+# Data Processing and Metrics Calculation
+
+# -----------------------------------------------------------------------------
+# CALCULATE METRICS BY YEAR
+# -----------------------------------------------------------------------------
+
+# Metrics for GAM and Null modeling
+
+# Fishing fleet: YEAR ~ Local
+
+# Trait data: Local
+Fine.Loc.traits.df.yr <- Fine_Final.df %>%
+  # ... (rest of the code for Local trait data)
+
+# Fishing fleet: YEAR ~ LOCAL
+Fine.Loc.sp.df.yr <- Fine_Final.df %>%
+  # ... (rest of the code for Local landings data)
+
+# Convert to presence and absence matrix
+Fine.Loc_sp_occ.yr <- Fine.Loc.sp.df.yr
+Fine.Loc_sp_occ.yr[Fine.Loc_sp_occ.yr > 0] <- 1
+Fine.Loc_sp_occ.mat.yr <- as.matrix(Fine.Loc_sp_occ.yr)
+
+# Compute the metrics
+Fine.Loc_sp_to_FE.yr <- species_to_FE(Fine.Loc.traits.df.yr)
+Fine.Loc_FE_metrics.yr <- FE_metrics(
+  Fine.Loc_sp_to_FE.yr,
+  Fine.Loc_sp_occ.mat.yr,
+  check_species_pool = TRUE,
+  folder_plot = "~/efc/R_Stat/2023_FD_Entities/Plots",
+  nm_asb_plot = row.names(Fine.Loc_sp_occ.mat.yr)
+)
+
+# Fishing fleet: YEAR ~ Coastal
+
+# Trait data: Coastal
+Fine.Coast.traits.df.yr <- Fine_Final.df %>%
+  # ... (rest of the code for Coastal trait data)
+
+# Fishing fleet: YEAR ~ Coastal
+Fine.Coast.sp.df.yr <- Fine_Final.df %>%
+  # ... (rest of the code for Coastal landings data)
+
+# Convert to presence and absence matrix
+Fine.Coast_sp_occ.yr <- Fine.Coast.sp.df.yr
+Fine.Coast_sp_occ.yr[Fine.Coast_sp_occ.yr > 0] <- 1
+Fine.Coast_sp_occ.mat.yr <- as.matrix(Fine.Coast_sp_occ.yr)
+
+# Compute the metrics
+Fine.Coast_sp_to_FE.yr <- species_to_FE(Fine.Coast.traits.df.yr)
+Fine.Coast_FE_metrics.yr <- FE_metrics(
+  Fine.Coast_sp_to_FE.yr,
+  Fine.Coast_sp_occ.mat.yr,
+  check_species_pool = TRUE,
+  folder_plot = "~/efc/R_Stat/2023_FD_Entities/Plots",
+  nm_asb_plot = row.names(Fine.Coast_sp_occ.mat.yr)
+)
+
+# END - Metrics by year
+# ---------------------------------- ! ! --------------------------------------#
