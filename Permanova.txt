@@ -1,0 +1,91 @@
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#--------------------------- Two-way PERMANOVA ---------------------------------
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+#---------------------------< Data preparation
+# Copy the original data frame for PERMANOVA analysis
+Fine_sp.df.pmv <- Fine_Final.df
+
+#... Filtering and selecting relevant data
+Fine_Landing.Loc_Cost.pmv <- Fine_sp.df.pmv %>%
+  filter(Fish_type %in% c("Local", "Coastal")) %>%  
+  dplyr::select(Target, Year, Fish_type, Decade, Spp.code, Biomass_Kg) %>%       
+  dplyr::group_by(Year, Decade, Fish_type, Spp.code) %>% 
+  dplyr::filter(Target == "Yes") %>% 
+  dplyr::summarize(Landing = sum(Biomass_Kg), .groups = "keep")  # Landings in Kg
+
+# Display the landing data
+Fine_Landing.Loc_Cost.pmv
+
+#... Pivot, transform, and preparation of the data for analysis
+Fine_Sp_Loc_Cost_pmv <- Fine_Landing.Loc_Cost.pmv %>%
+  dplyr::select(Year, Decade, Spp.code, Fish_type, Landing) %>%  
+  tidyr::pivot_wider(names_from = Spp.code, values_from = Landing) %>%
+  dplyr::mutate(across(everything(), replace_na, 0),
+                Year = as.factor(Year),
+                Decade = as.factor(Decade),
+                Fish_type = as.factor(Fish_type)) %>% 
+  as.data.frame()
+
+# Display the transformed data
+Fine_Sp_Loc_Cost_pmv 
+str(Fine_Sp_Loc_Cost_pmv)
+unique(Fine_Sp_Loc_Cost_pmv$Decade)
+
+#----------------< Perform PERMANOVA 
+#----< Assemblage composition - Presence-absence data
+Fine_Sp_Loc_Cost_01 <- Fine_Sp_Loc_Cost_pmv[4:111]
+Fine_Sp_Loc_Cost_01[Fine_Sp_Loc_Cost_01 > 0] <- 1
+
+# Calculate dissimilarity matrix
+Fine_dissim.matrix.01 <- vegdist(x = Fine_Sp_Loc_Cost_01, method = "bray")
+
+# Perform PERMANOVA
+Fine_permanova_result.01 <- adonis2(Fine_dissim.matrix.01 ~ Fish_type * Decade, data = Fine_Sp_Loc_Cost_pmv, permutations = 999)
+
+# Print the results
+print(Fine_permanova_result.01)
+
+#----< Assemblage structure - landing data
+# Transform the data using Hellinger transformation
+Fine_transformed_data <- decostand(Fine_Sp_Loc_Cost_pmv[, 4:111], method = "hellinger")
+
+# Calculate dissimilarity matrix
+Fine_dissim.matrix <- vegdist(x = Fine_transformed_data, method = "bray")
+
+# Perform PERMANOVA
+Fine_permanova_result <- adonis2(Fine_dissim.matrix ~ Fish_type * Decade, data = Fine_Sp_Loc_Cost_pmv, permutations = 999)
+
+# Print the results
+print(Fine_permanova_result)
+
+#----------------< Perform pairwise PERMANOVA post hoc test
+# Function for pairwise.adonis
+# https://github.com/pmartinezarbizu/pairwiseAdonis/blob/master/pairwiseAdonis/R/pairwise.adonis.R
+
+# ... (pairwise.adonis function implementation)
+
+#----< Assemblage structure - landing data
+# Perform pairwise PERMANOVA for Decade
+Fine_pairwise_result.01.1 <- pairwise.adonis(Fine_dissim.matrix.01, Fine_Sp_Loc_Cost_pmv$Decade, p.adjust.m = 'bonferroni', perm = 999)
+
+# Perform pairwise PERMANOVA for Fish_type
+Fine_pairwise_result.01.2 <- pairwise.adonis(Fine_dissim.matrix.01, Fine_Sp_Loc_Cost_pmv$Fish_type, p.adjust.m = 'bonferroni', perm = 999)
+
+# Display summary for pairwise results
+summary.pwadonis(Fine_pairwise_result.01.1)
+summary.pwadonis(Fine_pairwise_result.01.2)
+
+#----< Assemblage structure - landing data
+# Perform pairwise PERMANOVA for Decade
+Fine_pairwise_result.land1 <- pairwise.adonis(Fine_dissim.matrix, Fine_Sp_Loc_Cost_pmv$Decade, p.adjust.m = 'bonferroni', perm = 999)
+
+# Perform pairwise PERMANOVA for Fish_type
+Fine_pairwise_result.land2 <- pairwise.adonis(Fine_dissim.matrix, Fine_Sp_Loc_Cost_pmv$Fish_type, p.adjust.m = 'bonferroni', perm = 999)
+
+# Display summary for pairwise results
+summary.pwadonis(Fine_pairwise_result.land1)
+summary.pwadonis(Fine_pairwise_result.land2)
+
+# END- Two-way PERMANOVA
+# ---------------------------------- ! ! --------------------------------------#
