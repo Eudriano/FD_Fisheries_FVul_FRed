@@ -1,0 +1,195 @@
+# Load necessary libraries
+library(mgcv)  # For Generalized Additive Models
+
+# Set up the plotting device for observed metrics related to Functional Redundancy
+pdf(file = "~/efc/R_Stat/2023_FD_Entities/Plots/Plots_fine/11_Fine_Metrics_Observed.pdf",
+    width = 6, height = 6)
+par(mar = c(3.9, 3.7, 0.8, 0.8), oma = c(0.1, 0.1, 0.1, 0.1), las = 1)
+
+# Set up the layout for multiple plots
+layout(matrix(c(1, 2, 3,
+                4, 5, 6),
+              nrow = 3, byrow = TRUE))
+
+# Fit GAM model for observed Functional Redundancy over years
+Fine_Gam_Obs_FRed.year <- mgcv::gam(Observed_F_Red ~ Fishing_type + s(Year, by = Fishing_type), data = Fine_Merged_GAM.df)
+summary(Fine_Gam_Obs_FRed.year, digits = 3)
+
+# Plot for Local fishing - Functional Redundancy
+plot(Fine_Gam_Obs_FRed.year, select = 2, col = alpha("royalblue1", 0.5), lwd = 3.0, se = TRUE,
+     xlab = "", ylab = "", shade = TRUE, shade.col = alpha("skyblue", 0.8),
+     rug = FALSE, residuals = TRUE, pch = 16,
+     xlim = c(1980, 2019), ylim = c(-0.045, 0.045), xaxt = "n", yaxt = "n")
+minorAxis(1, n = 10, extend = FALSE)
+minorAxis(2, n = 1, range = c(-0.0455, 0.045))
+text(label = "Local fishing", x = 2010, y = -0.02, cex = 1, font = 2, col = alpha("skyblue", 0.8))
+text(label = "FRed", x = 1984.5, y = 0.035, cex = 1, font = 2, col = "gray50")
+abline(h = 0, col = "gray55", lwd = 0.5, lty = 2)
+abline(v = c(1980, 1990, 1999, 2010, 2019), lty = "dashed", lwd = 0.5, col = "gray90")
+polygon(x = c(1990, 1999, 1999, 1990),
+        y = c(0.045, 0.045, -0.045, -0.045),
+        col = alpha("gray", 0.1), border = NA, lty = 5)
+polygon(x = c(2010, 2019, 2019, 2010),
+        y = c(0.045, 0.045, -0.045, -0.045),
+        col = alpha("gray", 0.1), border = NA, lty = 5)
+text(label = "1980s", x = 1984.5, y = 0.044, cex = 1, font = 1, col = "gray25")
+text(label = "1990s", x = 1994.5, y = 0.044, cex = 1, font = 1, col = "gray25")
+text(label = "2000s", x = 2004.5, y = 0.044, cex = 1, font = 1, col = "gray25")
+text(label = "2010s", x = 2014.5, y = 0.044, cex = 1, font = 1, col = "gray25")
+text(label = "A", x = 2019, y = 0.045, cex = 1, font = 1)
+
+# Plot for Coastal fishing - Functional Redundancy
+plot(Fine_Gam_Obs_FRed.year, select=1, col=alpha("olivedrab",0.5), lwd=3.0,se=TRUE,
+     xlab="", ylab="",
+     shade=TRUE,shade.col=alpha("palegreen4",0.5),
+     rug=FALSE, residuals=TRUE, pch=16, frame.plot = TRUE,
+     xlim = c(1980,2019), ylim = c(-0.0455,0.045), xaxt="n", yaxt="n")
+minorAxis(1, n = 10, extend=FALSE)
+minorAxis(2, n = 1, range = c(-0.0455,0.045))
+#minorAxis(4, n = 1, range = c(-0.045,0.045),col = "gray50")
+text(label="Coastal fishing", x=2010, y = -0.02, cex=1, font=2,col=alpha("palegreen4",0.8))
+text(label="FRed", x=1984.5, y = 0.035, cex=1, font=2,col="gray50")
+abline(h = 0, col="gray55", lwd=0.5, lty=2)
+abline(v=c(1980, 1990, 1999, 2010, 2020), lty="dashed", lwd=0.5, col="gray90")
+polygon(x=c(1990,1999,1999,1990), 
+        y=c(0.045,0.045,-0.045,-0.045), 
+        col=alpha("gray",0.1),border=NA,lty=5)
+polygon(x=c(2010,2019,2019,2010), 
+        y=c(0.045,0.045,-0.045,-0.045), 
+        col=alpha("gray",0.1),border=NA,lty=5)
+text(label="1980s", x=1984.5, y = 0.044, cex=1, font=1, col="gray25")
+text(label="1990s", x=1994.5, y = 0.044, cex=1, font=1, col="gray25")
+text(label="2000s", x=2004.5, y = 0.044, cex=1, font=1, col="gray25")
+text(label="2010s", x=2014.5, y = 0.044, cex=1, font=1, col="gray25")
+text(label="B", x=2019, y = 0.045, cex=1, font=1)
+
+# Close the plotting device
+dev.off()
+
+# Repeat the process for Expected metrics related to Functional Over-Redundancy and Functional Vulnerability
+
+#-------------------------------- GAM check ------------------------------------
+# Install and load required packages
+# install.packages("mgcViz")
+library(mgcViz)
+
+# Observed
+#-----< Obs FRed
+Fine_gam.check_exp_FRed <- getViz(Fine_Gam_Obs_FRed.year)
+
+# Save GAM check plot as a TIFF file
+tiff("~/efc/R_Stat/2023_FD_Entities/Plots/Plots_fine/13_Fine_FRed_GAMcheck_Obs.tif",
+     width = 220, height = 180, units = "mm", res = 600, compression = "lzw")
+
+# Visualize GAM check
+check(Fine_gam.check_exp_FRed,
+      a.qq = list(method = "tnorm", rep = 100, level = .9, CI = "quantile",
+                  a.cipoly = list(fill = "gray85"),
+                  a.ablin = list(size = 0.8),
+                  a.qqpoi = list(size = 1, "shape" = 1)),
+      a.respoi = list(size = 1.5),
+      a.hist = list(bins = 10, col = "white", fill = "gray85")
+)
+dev.off()
+
+#-----< Obs FOred
+gam.check_exp_FOred <- getViz(Fine_Gam_Obs_FOred.year)
+
+# Save GAM check plot as a TIFF file
+tiff("~/efc/R_Stat/2023_FD_Entities/Plots/Plots_fine/10_FOred_GAMcheck_Obs.tif",
+     width = 220, height = 180, units = "mm", res = 600, compression = "lzw")
+
+# Visualize GAM check
+check(gam.check_exp_FOred,
+      a.qq = list(method = "tnorm", rep = 100, level = .9, CI = "quantile",
+                  a.cipoly = list(fill = "gray85"),
+                  a.ablin = list(size = 0.8),
+                  a.qqpoi = list(size = 1, "shape" = 1)),
+      a.respoi = list(size = 1.5),
+      a.hist = list(bins = 10, col = "white", fill = "gray85")
+)
+dev.off()
+
+#-----< Obs FVuln
+gam.check_exp_FVuln <- getViz(Fine_Gam_Obs_FVuln.year)
+
+# Save GAM check plot as a TIFF file
+tiff("~/efc/R_Stat/2023_FD_Entities/Plots/Plots_fine/14_FVuln_GAMcheck_Obs.tif",
+     width = 220, height = 180, units = "mm", res = 600, compression = "lzw")
+
+# Visualize GAM check
+check(gam.check_exp_FVuln,
+      a.qq = list(method = "tnorm", rep = 100, level = .9, CI = "quantile",
+                  a.cipoly = list(fill = "gray85"),
+                  a.ablin = list(size = 0.8),
+                  a.qqpoi = list(size = 1, "shape" = 1)),
+      a.respoi = list(size = 1.5),
+      a.hist = list(bins = 10, col = "white", fill = "gray85")
+)
+dev.off()
+
+# Expected
+#-----< Exp FRed
+Fine_gam.check_exp_FRed <- getViz(Fine_Gam_Exp_FRed.year)
+
+# Save GAM check plot as a PDF file
+pdf(file = "~/efc/R_Stat/2023_FD_Entities/Plots/Plots_fine/15_Fine_FRed_GAMcheck_Exp.pdf",
+    width = 8, height = 6)
+
+# Visualize GAM check
+check(Fine_gam.check_exp_FRed,
+      a.qq = list(method = "tnorm", rep = 100, level = .9, CI = "quantile",
+                  a.cipoly = list(fill = "gray85"),
+                  a.ablin = list(size = 0.8),
+                  a.qqpoi = list(size = 1, "shape" = 1)),
+      a.respoi = list(size = 1.5),
+      a.hist = list(bins = 10, col = "white", fill = "gray85")
+)
+dev.off()
+
+#-----< Exp FOred
+gam.check_exp_FOred <- getViz(Fine_Gam_Exp_FOred.year)
+
+# Save GAM check plot as a PDF file
+pdf(file = "~/efc/R_Stat/2023_FD_Entities/Plots/Plots_fine/16_FOred_GAMcheck_Exp.pdf",
+    width = 8, height = 6)
+
+# Visualize GAM check
+check(gam.check_exp_FOred,
+      a.qq = list(method = "tnorm", rep = 100, level = .9, CI = "quantile",
+                  a.cipoly = list(fill = "gray85"),
+                  a.ablin = list(size = 0.8),
+                  a.qqpoi = list(size = 1, "shape" = 1)),
+      a.respoi = list(size = 1.5),
+      a.hist = list(bins = 10, col = "white", fill = "gray85")
+)
+dev.off()
+
+#-----< Exp FVuln
+gam.check_exp_FVuln <- getViz(Fine_Gam_Exp_FVuln.year)
+
+# Save GAM check plot as a PDF file
+pdf(file = "~/efc/R_Stat/2023_FD_Entities/Plots/Plots_fine/17_FVuln_GAMcheck_Exp.pdf",
+    width = 8, height = 6)
+
+# Visualize GAM check
+check(gam.check_exp_FVuln,
+      a.qq = list(method = "tnorm", rep = 100, level = .9, CI = "quantile",
+                  a.cipoly = list(fill = "gray85"),
+                  a.ablin = list(size = 0.8),
+                  a.qqpoi = list(size = 1, "shape" = 1)),
+      a.respoi = list(size = 1.5),
+      a.hist = list(bins = 10, col = "white", fill = "gray85")
+)
+dev.off()
+
+#-------------------------------- GAM check ------------------------------------
+
+# GAM check for observed data
+gam.check(Fine_Gam_Obs_FRed.year)
+gam.check(Fine_Gam_Obs_FOred.year)
+gam.check(Fine_Gam_Obs_FVuln.year)
+
+# END- GAM with interaction terms
+# ---------------------------------- ! ! --------------------------------------#
+
