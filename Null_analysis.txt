@@ -1,0 +1,122 @@
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@
+#--------------------------- Null plots -------------------------------------
+#@@@@@@@@@@@@@@@@@@@@@@@@@@@
+# Load required libraries
+library(ggplot2)
+library(ggrepel) 
+
+# Data: Fine_Merged_GAM.df 
+# Fine_Merged_GAM.df should contain necessary columns like Year, Fishing_type, Observed_F_Red, Expected_F_Red, p_val_F_Red, 
+# Observed_F_Ored, Expected_F_Ored, p_val_F_Ored, Observed_F_Vuln, Expected_F_Vuln, and p_val_F_Vuln
+
+#---< Just for Decade column
+Fin_Null.plot.df <- Fine_Merged_GAM.df
+
+# Create a 'Decade' column based on the 'Year' values
+Fin_Null.plot.df <- Fin_Null.plot.df %>%
+  mutate(Decade = case_when(
+    Year >= 1980 & Year < 1990 ~ "1980s",
+    Year >= 1990 & Year < 2000 ~ "1990s",
+    Year >= 2000 & Year < 2010 ~ "2000s",
+    Year >= 2010 & Year < 2020 ~ "2010s",
+    Year >= 2020 ~ "2020s",
+    TRUE ~ "s0000" # Azores
+  )) %>% 
+  mutate(
+    Year = as.factor(Year),
+    Decade = as.factor(Decade)
+  ) %>% 
+  as.data.frame()
+
+# Print structure of the data frame
+str(Fine_Null.plot.df)
+
+# Set colors and shapes for the plots
+colors1 <- c("1980s" = "#5d1414", "1990s" = "#3d85c6", 
+             "2000s" = "#80b900", "2010s" = "#635688")
+shapes1 <- c("1980s" = 16, "1990s" = 17, "2000s" = 18, "2010s" = 15)
+
+#------------------< FRed : Observed ~ mean expected ---
+#
+#--- Local fishing
+Fine_FRed_local <- ggplot(subset(Fine_Null.plot.df, Fishing_type == "Local"), 
+                          aes(x = Year, y = Observed_F_Red, color = Decade, shape = Decade)) +
+  geom_point(size = 3) +  # Removed aes() from geom_point
+  geom_line(aes(y = Expected_F_Red, color = Decade, group= Decade), linetype = 2, linewidth = 1) +
+  geom_label_repel(aes(label = round(p_val_F_Red, 3), color = Decade), size = 3, max.overlaps = 20) +
+  labs(x = "",
+       y = "Observed vs. mean expected FRed",
+       title = " ") +
+  scale_color_manual(values = colors1) +
+  scale_shape_manual(values = shapes1) +
+  scale_y_continuous(limits = c(0.99 , 1.08), breaks = seq(0.99, 1.08, by = 0.02)) + 
+  theme_bw() +
+  theme(legend.title = element_text(family = "sans"),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, size = 10, family = "sans"),
+        axis.text.y = element_text(angle = 360, vjust = 0.5, size = 10, family = "sans"),
+        legend.position = "right",
+        panel.grid.major = element_line(color = "gray80", size = 0.1, linetype = "dashed"),  # Major grid lines
+        panel.grid.minor = element_line(color = "gray", size = 0.1, linetype = "dashed"),
+        legend.key = element_rect(fill = "white", color = "black", size = 1),
+        legend.background = element_rect(fill = "lightgray", size = 0.5),
+        legend.box.background = element_rect(fill = "white", color = "black", size = 1)) +
+  guides(color = guide_legend(
+    keywidth = 2,
+    keyheight = 2),
+    shape = guide_legend(title = "Shape"))
+
+# Print the FRed local plot
+print(Fine_FRed_local)
+
+#--- Coastal fishing
+Fine_FRed_coastal <- ggplot(subset(Fine_Null.plot.df, Fishing_type == "Coastal"), 
+                            aes(x = Year, y = Observed_F_Red, color = Decade, shape = Decade)) +
+  geom_point(size = 3) +  # Removed aes() from geom_point
+  geom_line(aes(y = Expected_F_Red, color = Decade, group= Decade), linetype = 2, linewidth = 1) +
+  geom_label_repel(aes(label = round(p_val_F_Red, 3), color = Decade), size = 3, max.overlaps = 20) +
+  labs(x = "",
+       y = "Observed vs. mean expected FRed",
+       title = " ") +
+  scale_color_manual(values = colors1) +
+  scale_shape_manual(values = shapes1) +
+  scale_y_continuous(limits = c(0.99 , 1.08), breaks = seq(0.99, 1.08, by = 0.02)) + 
+  theme_bw() +
+  theme(legend.title = element_text(family = "sans"),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, size = 10, family = "sans"),
+        axis.text.y = element_text(angle = 360, vjust = 0.5, size = 10, family = "sans"),
+        legend.position = "right",
+        panel.grid.major = element_line(color = "gray80", size = 0.1, linetype = "dashed"),  # Major grid lines
+        panel.grid.minor = element_line(color = "gray", size = 0.1, linetype = "dashed"),
+        legend.key = element_rect(fill = "white", color = "black", size = 1),
+        legend.background = element_rect(fill = "lightgray", size = 0.5),
+        legend.box.background = element_rect(fill = "white", color = "black", size = 1)) +
+  guides(color = guide_legend(
+    keywidth = 2,
+    keyheight = 2),
+    shape = guide_legend(title = "Shape"))
+
+# Print the FRed coastal plot
+print(Fine_FRed_coastal)
+
+# ... (repeat similar blocks for FOred and FVuln)
+
+#---- Save all the plots
+# Load the required library for arranging plots
+library(gridExtra)
+
+# Create a PDF file
+pdf(file = "~/efc/R_Stat/2023_FD_Entities/Plots/Plots_fine/18_Fine_Null_PF1.pdf",
+    width = 18, height = 12)
+
+# Set plot margins and outer margins
+par(mar = c(0.8, 0.8, 0.8, 0.8), oma = c(0.1, 0.1, 0.1, 0.1), las = 1)
+
+# Combine all the plots into one grid
+combined_plot <- grid.arrange(Fine_FRed_local, Fine_FRed_coastal, Fine_FOred_local, Fine_FOred_coastal, Fine_FVuln_local, Fine_FVuln_coastal,
+                              ncol = 2)  # Adjust the number of columns as needed
+
+# Print the combined plot
+print(combined_plot)
+
+# Close the PDF file
+dev.off()
